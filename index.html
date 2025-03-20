@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Shia Essentials Admin Panel</title>
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <!-- SortableJS for drag & drop reordering -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js" integrity="sha512-9aPrb+Eo7jUyym6mOnSWbw9YWxeEP6ChK/nP4zpbQ4NPv+tSHv4QbNsXYkNoJSGHvr0wg9qmNIQvT6dtSh8P0w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <style>
+    /* Basic Reset and Styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+    h1, h2, h3 {
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    input, select, button, textarea {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #1d4ed8;
+    }
+    .hidden {
+      display: none;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    ul li {
+      background: #e2e8f0;
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 4px;
+      cursor: grab;
+    }
+    nav {
+      margin-bottom: 20px;
+    }
+    nav button {
+      margin-right: 10px;
+      padding: 10px 15px;
+    }
+    #status {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav>
+    <button onclick="showSection('categoryManagement')">Manage Categories</button>
+    <button onclick="showSection('contentEntry')">Add Content</button>
+  </nav>
+
+  <!-- Category Management Section -->
+  <div id="categoryManagement" class="container">
+    <h1>Category Management</h1>
+    <!-- Add Category Form -->
+    <h3>Add Category</h3>
+    <input id="newCategoryName" placeholder="Category Name" />
+    <input id="newCategoryPosition" type="number" placeholder="Position (for ordering)" />
+    <button onclick="addCategory()">Add Category</button>
+    <hr>
+    <!-- Drag & Drop Reordering List -->
+    <h3>Reorder Categories</h3>
+    <ul id="categoryList"></ul>
+    <button onclick="saveCategoryOrder()">Save Order</button>
+  </div>
+
+  <!-- Content Entry Section -->
+  <div id="contentEntry" class="container hidden">
+    <h1>Add Content (Dua / Ziyarat / Namaz / Aamal)</h1>
+    <!-- Content Form -->
+    <select id="categorySelect"></select>
+    <input id="contentType" placeholder="Content Type (e.g., dua, ziyarat, aamal, namaz, tasbih, quran)" />
+    <input id="reminder" placeholder="Reminder (daily, weekly, 1-1, etc.)" />
+
+    <h3>Translations</h3>
+    <textarea id="translations" rows="3" placeholder='{"en": "Title in English", "ar": "عنوان بالعربية", "ur": "عنوان اردو"}'></textarea>
+
+    <h3>Line-by-Line Verses (Optional - JSON Array)</h3>
+    <textarea id="verses" rows="3" placeholder='[{"lang": "en", "text": "First line"}, {"lang": "ar", "text": "السطر الأول"}]'></textarea>
+
+    <button onclick="addContent()">Submit Content</button>
+  </div>
+
+  <div class="container">
+    <div id="status"></div>
+  </div>
+
+  <script>
+    // Initialize Supabase with your provided credentials
+    const supabase = supabase.createClient(
+      'https://kdrkwwazwtuvlfqhjefe.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtkcmt3d2F6d3R1dmxmcWhqZWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI1MDk5OTMsImV4cCI6MjA1ODA4NTk5M30.qNgjoewVW8f1T4MhJOObs6-LkikxVsqO4PCkp9OeW4o'
+    );
+
+    // UI Navigation Function
+    function showSection(sectionId) {
+      document.getElementById('categoryManagement').classList.add('hidden');
+      document.getElementById('contentEntry').classList.add('hidden');
+      document.getElementById(sectionId).classList.remove('hidden');
+    }
+
+    // Load Categories for Dropdown and Reordering List
+    async function loadCategories() {
+      const { data: categories, error } = await supabase
+        .from('category')
+        .select('*')
+        .order('position', { ascending: true });
+      
+      if (error) {
+        document.getElementById('status').innerText = `Error fetching categories: ${error.message}`;
+        return;
+      }
+      
+      // Populate category dropdown in Content Entry form
+      const catSelect = document.getElementById('categorySelect');
+      catSelect.innerHTML = '';
+      categories.forEach(cat => {
+        catSelect.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
+      });
+
+      // Populate draggable category list for reordering
+      const catList = document.getElementById('categoryList');
+      catList.innerHTML = '';
+      categories.forEach(cat => {
+        const li = document.createElement('li');
+        li.textContent = cat.name;
+        li.setAttribute('data-id', cat.id);
+        catList.appendChild(li);
+      });
+
+      // Initialize SortableJS on the category list
+      new Sortable(catList, { animation: 150 });
+    }
+
+    // Call loadCategories on page load
+    window.onload = loadCategories;
+
+    // Add Category Function
+    async function addCategory() {
+      const name = document.getElementById('newCategoryName').value;
+      const position = parseInt(document.getElementById('newCategoryPosition').value);
+      if (!name || isNaN(position)) {
+        alert('Please enter both a category name and a valid position.');
+        return;
+      }
+      const { data, error } = await supabase
+        .from('category')
+        .insert([{ name, position }])
+        .select();
+
+      if (error) {
+        document.getElementById('status').innerText = `Error adding category: ${error.message}`;
+      } else {
+        document.getElementById('status').innerText = "Category added successfully!";
+        document.getElementById('newCategoryName').value = '';
+        document.getElementById('newCategoryPosition').value = '';
+        loadCategories();
+      }
+    }
+
+    // Save Category Order after Drag & Drop
+    async function saveCategoryOrder() {
+      const catListItems = document.querySelectorAll('#categoryList li');
+      const updates = [];
+      catListItems.forEach((item, index) => {
+        updates.push({
+          id: item.getAttribute('data-id'),
+          position: index + 1
+        });
+      });
+
+      // Update each category's position
+      for (const update of updates) {
+        const { error } = await supabase
+          .from('category')
+          .update({ position: update.position })
+          .eq('id', update.id);
+        if (error) {
+          document.getElementById('status').innerText = `Error updating order: ${error.message}`;
+          return;
+        }
+      }
+      document.getElementById('status').innerText = "Categories reordered successfully!";
+      loadCategories();
+    }
+
+    // Add Content Function
+    async function addContent() {
+      const categoryId = document.getElementById('categorySelect').value;
+      const contentType = document.getElementById('contentType').value;
+      const reminder = document.getElementById('reminder').value;
+      const translationsInput = document.getElementById('translations').value;
+      const versesInput = document.getElementById('verses').value;
+      
+      // Insert new content into the "content" table
+      const { data: contentData, error: contentError } = await supabase
+        .from('content')
+        .insert([{ category_id: categoryId, content_type: contentType, reminder }])
+        .select();
+      
+      if (contentError) {
+        document.getElementById('status').innerText = `Error adding content: ${contentError.message}`;
+        return;
+      }
+      
+      const contentId = contentData[0].id;
+
+      // Insert translations into "content_translation" table
+      try {
+        const translations = JSON.parse(translationsInput);
+        for (const lang in translations) {
+          await supabase.from('content_translation').insert([{
+            content_id: contentId,
+            language_code: lang,
+            title: translations[lang],
+            description: '',
+            transliteration: ''
+          }]);
+        }
+      } catch (e) {
+        document.getElementById('status').innerText = `Error parsing translations: ${e.message}`;
+        return;
+      }
+
+      // Insert verses into "verse" table (if provided)
+      if (versesInput) {
+        try {
+          const verses = JSON.parse(versesInput);
+          for (let i = 0; i < verses.length; i++) {
+            await supabase.from('verse').insert([{
+              content_id: contentId,
+              language_code: verses[i].lang,
+              verse_text: verses[i].text,
+              transliteration: verses[i].transliteration || '',
+              sequence: i + 1
+            }]);
+          }
+        } catch (e) {
+          document.getElementById('status').innerText = `Error parsing verses: ${e.message}`;
+          return;
+        }
+      }
+      
+      document.getElementById('status').innerText = "Content added successfully!";
+      // Clear the form fields after submission
+      document.getElementById('contentType').value = '';
+      document.getElementById('reminder').value = '';
+      document.getElementById('translations').value = '';
+      document.getElementById('verses').value = '';
+    }
+  </script>
+</body>
+</html>
