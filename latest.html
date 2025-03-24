@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Shia Essentials Admin Panel</title>
+
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+  <!-- SortableJS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js" crossorigin="anonymous"
+    referrerpolicy="no-referrer"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      background: white;
+      padding: 20px;
+      margin: auto;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    input,
+    select,
+    button,
+    textarea {
+      width: 100%;
+      padding: 8px;
+      margin: 10px 0;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background-color: #2563eb;
+      color: white;
+      cursor: pointer;
+      border: none;
+    }
+
+    button:hover {
+      background-color: #1d4ed8;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    ul li {
+      background: #e2e8f0;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 4px;
+      cursor: grab;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+
+    th, td {
+      padding: 10px;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    nav {
+      margin-bottom: 20px;
+    }
+
+    nav button {
+      margin-right: 10px;
+      padding: 10px 15px;
+    }
+
+    #status {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 10px;
+      }
+
+      input,
+      select,
+      button,
+      textarea {
+        margin: 5px 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <nav>
+    <button data-section="categoryManagement">Manage Categories</button>
+    <button data-section="contentEntry">Add Content</button>
+    <button data-section="crudPanel">Manage Content</button>
+  </nav>
+
+  <!-- Category Management -->
+  <div id="categoryManagement" class="container hidden">
+    <h1>Category Management</h1>
+    <input id="newCategoryName" placeholder="Category Name (required)" required />
+    <input id="newCategoryPosition" type="number" placeholder="Position (required)" required />
+    <button id="addCategoryBtn">Add Category</button>
+
+    <h3>Reorder Categories</h3>
+    <ul id="categoryList"></ul>
+    <button id="saveOrderBtn">Save Order</button>
+  </div>
+
+  <!-- Content Entry -->
+  <div id="contentEntry" class="container hidden">
+    <h1>Add Content</h1>
+    <select id="categorySelect"></select>
+    <input id="contentType" placeholder="Content Type (e.g., dua, ziyarat, namaz)" />
+    <input id="name" placeholder="Name (required)" required />
+    <textarea id="description" rows="3" placeholder="Description"></textarea>
+    <input id="reminder" placeholder="Reminder (optional)" />
+    <textarea id="translations" rows="3" placeholder='{"en":"Title in English", "ar":"عنوان"}'></textarea>
+    <textarea id="verses" rows="3" placeholder='[{"lang":"en","text":"Line 1"}]'></textarea>
+    <button id="addContentBtn">Submit Content</button>
+  </div>
+
+  <!-- CRUD Content Management -->
+  <div id="crudPanel" class="container hidden">
+    <h1>Content Management</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Select</th>
+          <th>Category</th>
+          <th>Type</th>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Reminder</th>
+        </tr>
+      </thead>
+      <tbody id="contentTableBody"></tbody>
+    </table>
+    <button id="deleteContentBtn">Delete Selected</button>
+  </div>
+
+  <div class="container"><div id="status"></div></div>
+
+  <script>
+    const supabase = window.supabase.createClient(
+        'https://kdrkwwazwtuvlfqhjefe.supabase.co',
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtkcmt3d2F6d3R1dmxmcWhqZWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI1MDk5OTMsImV4cCI6MjA1ODA4NTk5M30.qNgjoewVW8f1T4MhJOObs6-LkikxVsqO4PCkp9OeW4o'
+               
+);
+
+    const statusEl = document.getElementById('status');
+
+    // Navigation
+    document.querySelectorAll('nav button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.container').forEach(div => div.classList.add('hidden'));
+        document.getElementById(btn.dataset.section).classList.remove('hidden');
+        if (btn.dataset.section === 'crudPanel') loadContent();
+      });
+    });
+
+    // Load categories
+    async function loadCategories() {
+      const { data: categories, error } = await supabase.from('category').select('*').order('position');
+      if (error) return setStatus(`Error loading categories: ${error.message}`);
+
+      const catSelect = document.getElementById('categorySelect');
+      catSelect.innerHTML = categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
+
+      const catList = document.getElementById('categoryList');
+      catList.innerHTML = categories.map(cat => `<li data-id="${cat.id}">${cat.name}</li>`).join('');
+      new Sortable(catList, { animation: 150 });
+    }
+
+    // Add Category
+    document.getElementById('addCategoryBtn').addEventListener('click', async () => {
+      const name = document.getElementById('newCategoryName').value.trim();
+      const position = parseInt(document.getElementById('newCategoryPosition').value);
+      if (!name || isNaN(position)) return alert('Name and valid position are required.');
+
+      const { error } = await supabase.from('category').insert([{ name, position }]);
+      if (error) return setStatus(`Failed to add category: ${error.message}`);
+      setStatus('Category added.');
+      document.getElementById('newCategoryName').value = '';
+      document.getElementById('newCategoryPosition').value = '';
+      loadCategories();
+    });
+
+    // Save Category Order
+    document.getElementById('saveOrderBtn').addEventListener('click', async () => {
+      const items = document.querySelectorAll('#categoryList li');
+      for (let i = 0; i < items.length; i++) {
+        const id = items[i].dataset.id;
+        const { error } = await supabase.from('category').update({ position: i + 1 }).eq('id', id);
+        if (error) return setStatus(`Failed to save order: ${error.message}`);
+      }
+      setStatus('Category order saved.');
+      loadCategories();
+    });
+
+    // Add Content
+    document.getElementById('addContentBtn').addEventListener('click', async () => {
+      const categoryId = document.getElementById('categorySelect').value;
+      const contentType = document.getElementById('contentType').value.trim();
+      const name = document.getElementById('name').value.trim();
+      const description = document.getElementById('description').value.trim();
+      const reminder = document.getElementById('reminder').value.trim();
+
+      if (!name) return alert('Content Name is required.');
+
+      const { data, error } = await supabase.from('content').insert([{ category_id: categoryId, content_type: contentType, name, description, reminder }]).select();
+      if (error) return setStatus(`Error adding content: ${error.message}`);
+
+      const contentId = data[0].id;
+      await handleTranslations(contentId);
+      await handleVerses(contentId);
+
+      setStatus('Content added successfully.');
+      document.getElementById('contentEntry').reset();
+    });
+
+    async function handleTranslations(contentId) {
+      const translationsRaw = document.getElementById('translations').value;
+      if (!translationsRaw) return;
+      try {
+        const translations = JSON.parse(translationsRaw);
+        for (const [lang, title] of Object.entries(translations)) {
+          await supabase.from('content_translation').insert([{ content_id: contentId, language_code: lang, title }]);
+        }
+      } catch (err) {
+        setStatus('Invalid JSON in translations.');
+      }
+    }
+
+    async function handleVerses(contentId) {
+      const versesRaw = document.getElementById('verses').value;
+      if (!versesRaw) return;
+      try {
+        const verses = JSON.parse(versesRaw);
+        for (let i = 0; i < verses.length; i++) {
+          await supabase.from('verse').insert([{ content_id: contentId, ...verses[i], sequence: i + 1 }]);
+        }
+      } catch (err) {
+        setStatus('Invalid JSON in verses.');
+      }
+    }
+
+    // Load Content
+    async function loadContent() {
+      const { data, error } = await supabase.from('content').select('*, category(name)').order('id');
+      if (error) return setStatus(`Failed to fetch content: ${error.message}`);
+
+      const tbody = document.getElementById('contentTableBody');
+      tbody.innerHTML = data.map(item => `
+        <tr>
+          <td><input type="checkbox" data-id="${item.id}"></td>
+          <td>${item.category.name}</td>
+          <td>${item.content_type}</td>
+          <td>${item.name}</td>
+          <td>${item.description}</td>
+          <td>${item.reminder}</td>
+        </tr>
+      `).join('');
+    }
+
+    // Delete Content
+    document.getElementById('deleteContentBtn').addEventListener('click', async () => {
+      const selected = Array.from(document.querySelectorAll('#contentTableBody input:checked'));
+      if (!selected.length) return alert('Select content to delete.');
+
+      if (!confirm('Are you sure you want to delete selected content?')) return;
+
+      for (const cb of selected) {
+        const { error } = await supabase.from('content').delete().eq('id', cb.dataset.id);
+        if (error) return setStatus(`Error deleting content: ${error.message}`);
+      }
+      setStatus('Selected content deleted.');
+      loadContent();
+    });
+
+    function setStatus(message) {
+      statusEl.innerText = message;
+    }
+
+    // Initial Load
+    window.onload = () => loadCategories();
+  </script>
+</body>
+
+</html>

@@ -8,8 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
     <!-- SortableJS for drag & drop reordering -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js" crossorigin="anonymous"
+        referrerpolicy="no-referrer"></script>
     <style>
         /* Basic Reset and Styles */
         body {
@@ -88,6 +88,48 @@
             margin-top: 10px;
             font-weight: bold;
         }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+
+            input,
+            select,
+            button,
+            textarea {
+                margin: 5px 0;
+                padding: 6px;
+            }
+
+            button {
+                padding: 8px;
+            }
+
+            nav button {
+                margin-right: 5px;
+                padding: 8px 10px;
+            }
+        }
     </style>
 </head>
 
@@ -119,6 +161,8 @@
         <!-- Content Form -->
         <select id="categorySelect"></select>
         <input id="contentType" placeholder="Content Type (e.g., dua, ziyarat, aamal, namaz, tasbih, quran)" />
+        <input id="name" placeholder="Name (required)" required />
+        <textarea id="description" rows="3" placeholder="Description (optional)"></textarea>
         <input id="reminder" placeholder="Reminder (daily, weekly, 1-1, etc.)" />
 
         <h3>Translations</h3>
@@ -130,6 +174,27 @@
             placeholder='[{"lang": "en", "text": "First line"}, {"lang": "ar", "text": "السطر الأول"}]'></textarea>
 
         <button onclick="addContent()">Submit Content</button>
+    </div>
+
+    <!-- CRUD Panel -->
+    <div id="crudPanel" class="container hidden">
+        <h1>Content Management</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>Category</th>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Reminder</th>
+                </tr>
+            </thead>
+            <tbody id="contentTableBody">
+                <!-- Content rows will be populated here -->
+            </tbody>
+        </table>
+        <button onclick="deleteSelectedContent()">Delete Selected</button>
     </div>
 
     <div class="container">
@@ -147,7 +212,11 @@
             function showSection(sectionId) {
                 document.getElementById('categoryManagement').classList.add('hidden');
                 document.getElementById('contentEntry').classList.add('hidden');
+                document.getElementById('crudPanel').classList.add('hidden');
                 document.getElementById(sectionId).classList.remove('hidden');
+                if (sectionId === 'crudPanel') {
+                    loadContent();
+                }
             }
 
             // Load Categories for Dropdown and Reordering List
@@ -239,14 +308,21 @@
             async function addContent() {
                 const categoryId = document.getElementById('categorySelect').value;
                 const contentType = document.getElementById('contentType').value;
+                const name = document.getElementById('name').value;
+                const description = document.getElementById('description').value;
                 const reminder = document.getElementById('reminder').value;
                 const translationsInput = document.getElementById('translations').value;
                 const versesInput = document.getElementById('verses').value;
 
+                if (!name) {
+                    alert('Please enter a name for the content.');
+                    return;
+                }
+
                 // Insert new content into the "content" table
                 const { data: contentData, error: contentError } = await supabase
                     .from('content')
-                    .insert([{ category_id: categoryId, content_type: contentType, reminder }])
+                    .insert([{ category_id: categoryId, content_type: contentType, name, description, reminder }])
                     .select();
 
                 if (contentError) {
@@ -295,9 +371,60 @@
                 document.getElementById('status').innerText = "Content added successfully!";
                 // Clear the form fields after submission
                 document.getElementById('contentType').value = '';
+                document.getElementById('name').value = '';
+                document.getElementById('description').value = '';
                 document.getElementById('reminder').value = '';
                 document.getElementById('translations').value = '';
                 document.getElementById('verses').value = '';
+            }
+
+            // Load Content for CRUD Panel
+            async function loadContent() {
+                const { data: content, error } = await supabase
+                    .from('content')
+                    .select('*, category(name)')
+                    .order('id', { ascending: true });
+
+                if (error) {
+                    document.getElementById('status').innerText = `Error fetching content: ${error.message}`;
+                    return;
+                }
+
+                const contentTableBody = document.getElementById('contentTableBody');
+                contentTableBody.innerHTML = '';
+                content.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><input type="checkbox" data-id="${item.id}"></td>
+                        <td>${item.category.name}</td>
+                        <td>${item.content_type}</td>
+                        <td>${item.name}</td>
+                        <td>${item.description}</td>
+                        <td>${item.reminder}</td>
+                    `;
+                    contentTableBody.appendChild(row);
+                });
+            }
+
+            // Delete Selected Content
+            async function deleteSelectedContent() {
+                const checkboxes = document.querySelectorAll('#contentTableBody input[type="checkbox"]:checked');
+                const idsToDelete = Array.from(checkboxes).map(cb => cb.getAttribute('data-id'));
+
+                for (const id of idsToDelete) {
+                    const { error } = await supabase
+                        .from('content')
+                        .delete()
+                        .eq('id', id);
+
+                    if (error) {
+                        document.getElementById('status').innerText = `Error deleting content: ${error.message}`;
+                        return;
+                    }
+                }
+
+                document.getElementById('status').innerText = "Selected content deleted successfully!";
+                loadContent();
             }
 
             // Expose functions to the global scope
@@ -305,6 +432,7 @@
             window.addCategory = addCategory;
             window.saveCategoryOrder = saveCategoryOrder;
             window.addContent = addContent;
+            window.deleteSelectedContent = deleteSelectedContent;
         });
     </script>
 
