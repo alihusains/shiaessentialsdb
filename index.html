@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Shia Essentials CRUD Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap CSS from CDN -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body { background-color: #f8f9fa; }
+    h1 { text-align: center; margin-bottom: 20px; }
+    .form-section { margin-top: 20px; }
+    .table { margin-top: 20px; }
+    .nav-tabs .nav-link { cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Shia Essentials CRUD Panel</h1>
+    <!-- Nav Tabs -->
+    <ul class="nav nav-tabs" id="crudTab" role="tablist">
+      <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#categoryTab" role="tab">Category</a></li>
+      <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#contentTab" role="tab">Content</a></li>
+      <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#versesTab" role="tab">Verses</a></li>
+      <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#verseTranslationTab" role="tab">Verse Translation</a></li>
+      <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#eventsTab" role="tab">Events</a></li>
+      <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#mediaTab" role="tab">Media</a></li>
+      <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tasbihTab" role="tab">Tasbih</a></li>
+      <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#aamalTab" role="tab">Aamal</a></li>
+    </ul>
+    
+    <div class="tab-content" id="crudTabContent">
+      <!-- Category Tab -->
+      <div class="tab-pane fade show active" id="categoryTab" role="tabpanel">
+        <div class="form-section">
+          <h3>Add/Update Category</h3>
+          <form id="categoryForm">
+            <div class="form-group">
+              <label for="catName">Category Name</label>
+              <input type="text" class="form-control" id="catName" placeholder="Enter category name" required>
+            </div>
+            <div class="form-group">
+              <label for="parentCategory">Parent Category ID (optional)</label>
+              <input type="number" class="form-control" id="parentCategory" placeholder="Enter parent category ID">
+            </div>
+            <div class="form-group">
+              <label for="catPosition">Position</label>
+              <input type="number" class="form-control" id="catPosition" placeholder="Enter display position" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Category</button>
+          </form>
+        </div>
+        <div class="table-responsive">
+          <h4 class="mt-4">Category List</h4>
+          <table class="table table-bordered" id="categoryTable">
+            <thead>
+              <tr><th>ID</th><th>Name</th><th>Parent ID</th><th>Position</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Media Tab -->
+      <div class="tab-pane fade" id="mediaTab" role="tabpanel">
+        <div class="form-section">
+          <h3>Add/Update Media</h3>
+          <form id="mediaForm">
+            <div class="form-group">
+              <label for="mediaContentId">Content ID</label>
+              <input type="number" class="form-control" id="mediaContentId" placeholder="Enter related content ID" required>
+            </div>
+            <div class="form-group">
+              <label for="mediaType">Media Type</label>
+              <select class="form-control" id="mediaType" required>
+                <option value="">Select type</option>
+                <option value="audio">Audio</option>
+                <option value="video">Video</option>
+                <option value="photo">Photo</option>
+                <option value="pdf">PDF</option>
+                <option value="gif">GIF</option>
+                <option value="link">Link</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="mediaUrl">Media URL</label>
+              <input type="text" class="form-control" id="mediaUrl" placeholder="Enter media URL" required>
+            </div>
+            <div class="form-group">
+              <label for="mediaDesc">Description</label>
+              <textarea class="form-control" id="mediaDesc" rows="2" placeholder="Enter media description"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Media</button>
+          </form>
+        </div>
+        <div class="table-responsive">
+          <h4 class="mt-4">Media List</h4>
+          <table class="table table-bordered" id="mediaTable">
+            <thead>
+              <tr><th>ID</th><th>Content ID</th><th>Type</th><th>URL</th><th>Description</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Tasbih Tab -->
+      <div class="tab-pane fade" id="tasbihTab" role="tabpanel">
+        <div class="form-section">
+          <h3>Add/Update Tasbih</h3>
+          <form id="tasbihForm">
+            <div class="form-group">
+              <label for="tasbihContentId">Content ID</label>
+              <input type="number" class="form-control" id="tasbihContentId" placeholder="Enter related content ID" required>
+            </div>
+            <div class="form-group">
+              <label for="tasbihTitle">Title</label>
+              <input type="text" class="form-control" id="tasbihTitle" placeholder="Enter tasbih title" required>
+            </div>
+            <div class="form-group">
+              <label for="tasbihCount">Count</label>
+              <input type="number" class="form-control" id="tasbihCount" placeholder="Enter recitation count" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Tasbih</button>
+          </form>
+        </div>
+        <div class="table-responsive">
+          <h4 class="mt-4">Tasbih List</h4>
+          <table class="table table-bordered" id="tasbihTable">
+            <thead>
+              <tr><th>ID</th><th>Content ID</th><th>Title</th><th>Count</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Aamal Tab -->
+      <div class="tab-pane fade" id="aamalTab" role="tabpanel">
+        <div class="form-section">
+          <h3>Add/Update Aamal</h3>
+          <form id="aamalForm">
+            <div class="form-group">
+              <label for="aamalTitle">Aamal Title</label>
+              <input type="text" class="form-control" id="aamalTitle" placeholder="Enter Aamal title" required>
+            </div>
+            <div class="form-group">
+              <label for="aamalDesc">Aamal Description</label>
+              <textarea class="form-control" id="aamalDesc" rows="2" placeholder="Enter Aamal description"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="aamalContentId">Content ID</label>
+              <input type="number" class="form-control" id="aamalContentId" placeholder="Enter related content ID" required>
+            </div>
+            <div class="form-group">
+              <label for="aamalContentType">Content Type (e.g., Dua, Ziyarat, Namaz, etc.)</label>
+              <input type="text" class="form-control" id="aamalContentType" placeholder="Enter content type" required>
+            </div>
+            <div class="form-group">
+              <label for="aamalPosition">Position</label>
+              <input type="number" class="form-control" id="aamalPosition" placeholder="Enter position in sequence" required>
+            </div>
+            <div class="form-group">
+              <label for="aamalType">Aamal Type</label>
+              <input type="text" class="form-control" id="aamalType" placeholder="Enter Aamal type" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Aamal</button>
+          </form>
+        </div>
+        <div class="table-responsive">
+          <h4 class="mt-4">Aamal List</h4>
+          <table class="table table-bordered" id="aamalTable">
+            <thead>
+              <tr><th>ID</th><th>Title</th><th>Description</th><th>Content ID</th><th>Content Type</th><th>Position</th><th>Aamal Type</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Verses Tab -->
+      <div class="tab-pane fade" id="versesTab" role="tabpanel">
+        <div class="form-section">
+          <h3>Add/Update Verse</h3>
+          <form id="verseForm">
+            <div class="form-group">
+              <label for="verseContentId">Content ID</label>
+              <input type="number" class="form-control" id="verseContentId" placeholder="Enter related content ID" required>
+            </div>
+            <div class="form-group">
+              <label for="verseNumber">Verse Number</label>
+              <input type="number" class="form-control" id="verseNumber" placeholder="Enter verse number" required>
+            </div>
+            <div class="form-group">
+              <label for="verseArabic">Verse Text (Arabic)</label>
+              <textarea class="form-control" id="verseArabic" rows="2" placeholder="Enter Arabic text" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Verse</button>
+          </form>
+        </div>
+        <div class="table-responsive">
+          <h4 class="mt-4">Verse List</h4>
+          <table class="table table-bordered" id="verseTable">
+            <thead>
+              <tr><th>ID</th><th>Content ID</th><th>Verse Number</th><th>Arabic Text</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Verse Translation Tab -->
+      <div class="tab-pane fade" id="verseTranslationTab" role="tabpanel">
+        <div class="form-section">
+          <h3>Add/Update Verse Translation</h3>
+          <form id="verseTranslationForm">
+            <div class="form-group">
+              <label for="translationVerseId">Verse ID</label>
+              <input type="number" class="form-control" id="translationVerseId" placeholder="Enter verse ID" required>
+            </div>
+            <div class="form-group">
+              <label>Select Languages</label><br>
+              <div id="languageCheckboxes">
+                <!-- Language checkboxes will be populated here dynamically -->
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="translationText">Translation Text</label>
+              <textarea class="form-control" id="translationText" rows="2" placeholder="Enter translation text" required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="transliterationText">Transliteration Text</label>
+              <textarea class="form-control" id="transliterationText" rows="2" placeholder="Enter transliteration text"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Verse Translation</button>
+          </form>
+        </div>
+        <div class="table-responsive">
+          <h4 class="mt-4">Verse Translation List</h4>
+          <table class="table table-bordered" id="verseTranslationTable">
+            <thead>
+              <tr><th>ID</th><th>Verse ID</th><th>Language</th><th>Translation</th><th>Transliteration</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Events Tab -->
+      <div class="tab-pane fade" id="eventsTab" role="tabpanel">
+        <div class="form-section">
+          <h3>Add/Update Event</h3>
+          <form id="eventForm">
+            <div class="form-group">
+              <label for="eventTitle">Title</label>
+              <input type="text" class="form-control" id="eventTitle" placeholder="Enter event title" required>
+            </div>
+            <div class="form-group">
+              <label for="eventDesc">Description</label>
+              <textarea class="form-control" id="eventDesc" rows="2" placeholder="Enter event description"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="eventType">Event Type</label>
+              <input type="text" class="form-control" id="eventType" placeholder="Enter event type" required>
+            </div>
+            <div class="form-group">
+              <label for="eventMediaId">Media ID (optional)</label>
+              <input type="text" class="form-control" id="eventMediaId" placeholder="Enter media ID">
+            </div>
+            <div class="form-group">
+              <label for="islamicDay">Islamic Day</label>
+              <select class="form-control" id="islamicDay" required></select>
+            </div>
+            <div class="form-group">
+              <label for="islamicMonth">Islamic Month</label>
+              <select class="form-control" id="islamicMonth" required>
+                <option value="">Select Month</option>
+                <option value="Muharram">Muharram</option>
+                <option value="Safar">Safar</option>
+                <option value="Rabi' al-awwal">Rabi' al-awwal</option>
+                <option value="Rabi' al-thani">Rabi' al-thani</option>
+                <option value="Jumada al-awwal">Jumada al-awwal</option>
+                <option value="Jumada al-thani">Jumada al-thani</option>
+                <option value="Rajab">Rajab</option>
+                <option value="Sha'ban">Sha'ban</option>
+                <option value="Ramadan">Ramadan</option>
+                <option value="Shawwal">Shawwal</option>
+                <option value="Dhu al-Qidah">Dhu al-Qidah</option>
+                <option value="Dhu al-Hijjah">Dhu al-Hijjah</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Event</button>
+          </form>
+        </div>
+        <div class="table-responsive">
+          <h4 class="mt-4">Event List</h4>
+          <table class="table table-bordered" id="eventTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Event Type</th>
+                <th>Media ID</th>
+                <th>Islamic Day</th>
+                <th>Islamic Month</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Content Tab -->
+      <div class="tab-pane fade" id="contentTab" role="tabpanel">
+        <div class="form-section">
+          <h3>Add/Update Content</h3>
+          <form id="contentForm">
+            <div class="form-group">
+              <label for="contentTitle">Title</label>
+              <input type="text" class="form-control" id="contentTitle" placeholder="Enter content title" required>
+            </div>
+            <div class="form-group">
+              <label for="contentBody">Body/Description</label>
+              <textarea class="form-control" id="contentBody" rows="2" placeholder="Enter content description"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="contentLanguage">Primary Language</label>
+              <select class="form-control" id="contentLanguage" required>
+                <option value="ar">Arabic</option>
+                <option value="en">English</option>
+                <option value="ur">Urdu</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Content</button>
+          </form>
+        </div>
+        <div class="table-responsive">
+          <h4 class="mt-4">Content List</h4>
+          <table class="table table-bordered" id="contentTable">
+            <thead>
+              <tr><th>ID</th><th>Title</th><th>Body</th><th>Language</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      
+    </div> <!-- End tab-content -->
+  </div> <!-- End container -->
+
+  <!-- jQuery, Bootstrap JS, and Supabase JS (UMD) -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@latest/dist/umd/supabase.min.js"></script>
+  
+  <script>
+    // Initialize Supabase client with your credentials
+    const SUPABASE_URL = 'https://gandgvjyfbpsdkfkovmu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdhbmRndmp5ZmJwc2RrZmtvdm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMxODg2ODgsImV4cCI6MjA1ODc2NDY4OH0.78X5p1zg92bGAJqoRBbObAG9NX_R6yfFX5NKwEYFCpA';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Supported languages array (can be updated dynamically)
+    const supportedLanguages = ["Arabic", "English","Gujarati","Urdu"];
+
+    // Populate language checkboxes for Verse Translation dynamically
+    function populateLanguageCheckboxes() {
+      let checkboxesHTML = "";
+      supportedLanguages.forEach(lang => {
+        // Use lowercase code for the value, display the language name
+        let code = lang.toLowerCase();
+        checkboxesHTML += `
+          <div class="form-check form-check-inline">
+            <input class="form-check-input langCheckbox" type="checkbox" id="lang_${code}" value="${code}">
+            <label class="form-check-label" for="lang_${code}">${lang}</label>
+          </div>
+        `;
+      });
+      $("#languageCheckboxes").html(checkboxesHTML);
+    }
+    populateLanguageCheckboxes();
+
+    // Populate Islamic Day dropdown (1 to 30)
+    function populateIslamicDay() {
+      let optionsHTML = '<option value="">Select Day</option>';
+      for (let i = 1; i <= 30; i++) {
+        optionsHTML += `<option value="${i}">${i}</option>`;
+      }
+      $("#islamicDay").html(optionsHTML);
+    }
+    populateIslamicDay();
+
+    // Utility function to show alerts
+    function showAlert(message, type = 'success') {
+      alert(`${type.toUpperCase()}: ${message}`);
+    }
+
+    // ---------- CATEGORY CRUD ----------
+    $('#categoryForm').on('submit', function(e) {
+      e.preventDefault();
+      const name = $('#catName').val();
+      const parent_category_id = $('#parentCategory').val() || null;
+      const position = $('#catPosition').val();
+      supabaseClient.from('category').insert([{ name, parent_category_id, position }])
+      .then(({ data, error }) => {
+        if(error) showAlert(error.message, 'error');
+        else { showAlert('Category saved successfully'); $('#categoryForm')[0].reset(); fetchCategories(); }
+      });
+    });
+    
+    function fetchCategories() {
+      supabaseClient.from('category').select('*').order('id', { ascending: true })
+      .then(({ data, error }) => {
+        if(error) showAlert(error.message, 'error');
+        else {
+          let rows = '';
+          data.forEach(cat => {
+            rows += `<tr>
+              <td>${cat.id}</td>
+              <td>${cat.name}</td>
+              <td>${cat.parent_category_id || ''}</td>
+              <td>${cat.position}</td>
+            </tr>`;
+          });
+          $('#categoryTable tbody').html(rows);
+        }
+      });
+    }
+    fetchCategories();
+
+    // ---------- MEDIA CRUD ----------
+    $('#mediaForm').on('submit', function(e) {
+      e.preventDefault();
+      const content_id = $('#mediaContentId').val();
+      const type = $('#mediaType').val();
+      const url = $('#mediaUrl').val();
+      const description = $('#mediaDesc').val();
+      supabaseClient.from('media').insert([{ content_id, type, url, description }])
+      .then(({ data, error }) => {
+        if(error) showAlert(error.message, 'error');
+        else { showAlert('Media saved successfully'); $('#mediaForm')[0].reset(); fetchMedia(); }
+      });
+    });
+    
+    function fetchMedia() {
+      supabaseClient.from('media').select('*').order('id', { ascending: true })
+      .then(({ data, error }) => {
+        if(error) showAlert(error.message, 'error');
+        else {
+          let rows = '';
+          data.forEach(m => {
+            rows += `<tr>
+              <td>${m.id}</td>
+              <td>${m.content_id}</td>
+              <td>${m.type}</td>
+              <td>${m.url}</td>
+              <td>${m.description || ''}</td>
+            </tr>`;
+          });
+          $('#mediaTable tbody').html(rows);
+        }
+      });
+    }
+    fetchMedia();
+
+    // ---------- TASBIH CRUD ----------
+    $('#tasbihForm').on('submit', function(e) {
+      e.preventDefault();
+      const content_id = $('#tasbihContentId').val();
+      const title = $('#tasbihTitle').val();
+      const count = $('#tasbihCount').val();
+      supabaseClient.from('tasbih').insert([{ content_id, title, count }])
+      .then(({ data, error }) => {
+        if(error) showAlert(error.message, 'error');
+        else { showAlert('Tasbih saved successfully'); $('#tasbihForm')[0].reset(); fetchTasbih(); }
+      });
+    });
+    
+    function fetchTasbih() {
+      supabaseClient.from('tasbih').select('*').order('id', { ascending: true })
+      .then(({ data, error }) => {
+        if(error) showAlert(error.message, 'error');
+        else {
+          let rows = '';
+          data.forEach(t => {
+            rows += `<tr>
+              <td>${t.id}</td>
+              <td>${t.content_id}</td>
+              <td>${t.title}</td>
+              <td>${t.count}</td>
+            </tr>`;
+          });
+          $('#tasbihTable tbody').html(rows);
+        }
+      });
+    }
+    fetchTasbih();
+
+    // ---------- AAMAL CRUD ----------
+    $('#aamalForm').on('submit', function(e) {
+      e.preventDefault();
+      const amaal_title = $('#aamalTitle').val();
+      const amaal_description = $('#aamalDesc').val();
+      const content_id = $('#aamalContentId').val();
+      const content_type = $('#aamalContentType').val();
+      const position = $('#aamalPosition').val();
+      const amaal_type = $('#aamalType').val();
+      supabaseClient.from('aamal').insert([{ amaal_title, amaal_description, content_id, content_type, position, amaal_type }])
+      .then(({ data, error }) => {
+        if(error) showAlert(error.message, 'error');
+        else { showAlert('Aamal saved successfully'); $('#aamalForm')[0].reset(); fetchAamal(); }
+      });
+    });
+    
+    function fetchAamal() {
+      supabaseClient.from('aamal').select('*').order('id', { ascending: true })
+      .then(({ data, error }) => {
+        if(error) showAlert(error.message, 'error');
+        else {
+          let rows = '';
+          data.forEach(a => {
+            rows += `<tr>
+              <td>${a.id}</td>
+              <td>${a.amaal_title}</td>
+              <td>${a.amaal_description || ''}</td>
+              <td>${a.content_id}</td>
+              <td>${a.content_type}</td>
+              <td>${a.position}</td>
+              <td>${a.amaal_type}</td>
+            </tr>`;
+          });
+          $('#aamalTable tbody').html(rows);
+        }
+      });
+    }
+    fetchAamal();
+
+    // ---------- VERSE CRUD ----------
+    $('#verseForm').on('submit', function(e) {
+      e.preventDefault();
+      const content_id = $('#verseContentId').val();
+      const verse_number = $('#verseNumber').val();
+      const text_arabic = $('#verseArabic').val();
+      supabaseClient.from('verses').insert([{ content_id, verse_number, text_arabic }])
+      .then(({ data, error }) => {
+        if(error) showAlert(error.message, 'error');
+        else { showAlert('Verse saved successfully'); $('#verseForm')[0].reset(); fetchVerses(); }
+      });
+    });
+    
+    function fetchVerses() {
+      supabaseClient.from('verses').select('*').order('id', { ascending: true })
+      .then(({ data, error }) => {
+        if(error) showAlert(error.message, 'error');
+        else {
+          let rows = '';
+          data.forEach(v => {
+            rows += `<tr>
+              <td>${v.id}</td>
+              <td>${v.content_id}</td>
+              <td>${v.verse_number}</td>
+              <td>${v.text_arabic}</td>
+            </tr>`;
+          });
+          $('#verseTable tbody').html(rows);
+        }
+      });
+    }
+    fetchVerses();
+
+    // ---------- VERSE TRANSLATION CRUD ----------
+    $('#verseTranslationForm').on('submit', function(e) {
+      e.preventDefault();
+      const verse_id = $('#translationVerseId').val();
+      const selectedLangs = [];
+      $('.langCheckbox:checked').each(function() {
+        selectedLangs.push($(this).val());
+      });
+      const translation_text = $('#translationText').val();
+      const transliteration_text = $('#transliterationText').val();
+      // Insert translation for each selected language
+      selectedLangs.forEach(lang => {
+        supabaseClient.from('verse_translation').insert([{ verse_id, language: lang, translation_text, transliteration_text }])
+        .then(({ data, error }) => {
+          if(error) showAlert(error.message, 'error');
+          else showAlert('Verse translation saved for language: ' + lang);
+          fetchVerseTranslations();
+        });
+      });
+      $('#verseTranslationForm')[0].reset();
+    });
+    
+    function fetchVerseTranslations() {
+      supabaseClient.from('verse_translation').select('*').order('id', { ascending: true })
+      .then(({ data, error }) => {
+        if(error) showAlert(error.message, 'error');
+        else {
+          let rows = '';
+          data.forEach(vt => {
+            rows += `<tr>
+              <td>${vt.id}</td>
+              <td>${vt.verse_id}</td>
+              <td>${vt.language}</td>
+              <td>${vt.translation_text}</td>
+              <td>${vt.transliteration_text || ''}</td>
+            </tr>`;
+          });
+          $('#verseTranslationTable tbody').html(rows);
+        }
+      });
+    }
+    fetchVerseTranslations();
+
+    // ---------- EVENTS CRUD ----------
+    $('#eventForm').on('submit', function(e) {
+      e.preventDefault();
+      const title = $('#eventTitle').val();
+      const description = $('#eventDesc').val();
+      const event_type = $('#eventType').val();
+      const media_id = $('#eventMediaId').val() || null;
+      const islamic_day = $('#islamicDay').val();
+      const islamic_month = $('#islamicMonth').val();
+      supabaseClient.from('events').insert([{ title, description, event_type, media_id, islamic_day, islamic_month }])
+      .then(({ data, error }) => {
+        if(error) showAlert(error.message, 'error');
+        else { showAlert('Event saved successfully'); $('#eventForm')[0].reset(); fetchEvents(); }
+      });
+    });
+    
+    function fetchEvents() {
+      supabaseClient.from('events').select('*').order('created_at', { ascending: false })
+      .then(({ data, error }) => {
+        if(error) showAlert(error.message, 'error');
+        else {
+          let rows = '';
+          data.forEach(ev => {
+            rows += `<tr>
+              <td>${ev.id}</td>
+              <td>${ev.title}</td>
+              <td>${ev.description || ''}</td>
+              <td>${ev.event_type}</td>
+              <td>${ev.media_id || ''}</td>
+              <td>${ev.islamic_day}</td>
+              <td>${ev.islamic_month}</td>
+            </tr>`;
+          });
+          $('#eventTable tbody').html(rows);
+        }
+      });
+    }
+    fetchEvents();
+
+    // ---------- CONTENT CRUD ----------
+    $('#contentForm').on('submit', function(e) {
+      e.preventDefault();
+      const title = $('#contentTitle').val();
+      const body = $('#contentBody').val();
+      const language = $('#contentLanguage').val();
+      supabaseClient.from('content').insert([{ title, body, language }])
+      .then(({ data, error }) => {
+        if(error) showAlert(error.message, 'error');
+        else { showAlert('Content saved successfully'); $('#contentForm')[0].reset(); fetchContent(); }
+      });
+    });
+    
+    function fetchContent() {
+      supabaseClient.from('content').select('*').order('id', { ascending: true })
+      .then(({ data, error }) => {
+        if(error) showAlert(error.message, 'error');
+        else {
+          let rows = '';
+          data.forEach(c => {
+            rows += `<tr>
+              <td>${c.id}</td>
+              <td>${c.title}</td>
+              <td>${c.body || ''}</td>
+              <td>${c.language}</td>
+            </tr>`;
+          });
+          $('#contentTable tbody').html(rows);
+        }
+      });
+    }
+    fetchContent();
+  </script>
+</body>
+</html>
